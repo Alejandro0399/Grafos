@@ -3,22 +3,28 @@
 #include "grafo.h"
 #include "List.h"
 #include "queue.h"
+#include <String.h>
 
 struct strGraph{
 	List table;
-	DestroyFunc destrcutor;
+	DestroyFunc destructor;
 	PrintFunc printer;
 	int size;
+	int tiempo;
+	Queue cola;
 };
 
 struct strVertice{
 	List aristas;
+	int tiempoDescubrimiento;
+	int tiempoTerminacion;
+	char* color;
+	int distancia;
 	Type data;
 	struct strVertice *padre;
 };
 
 struct strArista{
-	char* color;
 	struct strVertice *origen;
 	struct strVertice *destino;
 	double weight;
@@ -31,7 +37,7 @@ Graph graph_create(PrintFunc printer, DestroyFunc destructor){
 	Graph g = (Graph)malloc(sizeof(struct strGraph));
 	g->table = list_create(NULL);
 	g->size = 0;
-	g->destrcutor = destructor;
+	g->destructor = destructor;
 	g->printer = printer;
 	return g;
 }
@@ -102,7 +108,7 @@ void graph_addEdge(Graph g, Type u, Type v, double weight){
 		return;
 	}
 	if(verticeU->aristas == NULL){
-		verticeU->aristas = list_create(g->destrcutor);
+		verticeU->aristas = list_create(g->destructor);
 	}
 	existeV = False;
 	for(int i = 0; i<list_size(verticeU->aristas); i++){
@@ -141,11 +147,72 @@ void graph_deleteEdge(Graph g, Type u, Type v){
 }
 
 void BFS(Graph g, Type start){
-
+	for(int i=0;i<g->size;i++){
+		Vertex vertice =(Vertex) list_getdata(g->table,i);
+		if(vertice->data!=start){
+			vertice->color="Blanco";
+			vertice->distancia=2147483647;
+			vertice->padre=NULL;
+		}
+		else{
+			vertice->color="Gris";
+			vertice->distancia=0;
+			vertice->padre=NULL;
+			g->cola=queue_create(g->destructor);
+			queue_offer(g->cola,vertice);
+		}
+	}
+	while(queue_size(g->cola)>0){
+		Vertex verticeU = (Vertex)queue_poll(g->cola);
+		if(verticeU->aristas!=Null){
+			for(int i=0;i<list_size(verticeU->aristas);i++){
+				Edge e = (Edge)list_getdata(verticeU->aristas,i);
+				Vertex verticeV = e->destino;
+				if(strcmp(verticeV->color,"Blanco")==0){
+					verticeV->color="Gris";
+					verticeV->distancia=verticeU->distancia+1;
+					verticeV->padre=verticeU;
+					queue_offer(g->cola,verticeV);
+				}
+			}
+		}
+		verticeU->color="Negro";
+	}
 }
 
 void DFS(Graph g){
+	for(int i=0;i<g->size;i++){
+		Vertex verticeU = (Vertex)list_getdata(g->table,i);
+		verticeU->color="Blanco";
+		verticeU->padre=NULL;
+	}
+	g->tiempo=0;
+	for(int i=0;i<g->size;i++){
+		Vertex verticeU = (Vertex)list_getdata(g->table,i);
+		if(strcmp(verticeU->color,"Blanco")==0){
+			visita(g,verticeU);
+		}
+	}
+	
+}
 
+void visita(Graph g, Vertex u){
+	g->tiempo++;
+	u->tiempoDescubrimiento=g->tiempo;
+	u->color="Gris";
+	if(u->aristas!=NULL){
+		for(int i=0;i<list_size(u->aristas);i++){
+			Edge e = (Edge)list_getdata(u->aristas,i);
+			Vertex verticeV=e->destino;
+				if(strcmp(verticeU->color,"Blanco")==0){
+					verticeV->padre=u;
+					visita(g,verticeV);
+				}
+		}
+		u->color="Negro";
+		g->tiempo++;
+		u->tiempoTerminacion=g->tiempo;
+	}
 }
 
 void dijkstra(Graph g, Type start){
