@@ -4,6 +4,7 @@
 #include "List.h"
 #include "queue.h"
 #include <String.h>
+#include "PriorityQueue.h"
 
 struct strGraph{
 	List table;
@@ -216,6 +217,26 @@ void visita(Graph g, Vertex u){
 }
 
 void dijkstra(Graph g, Type start){
+	Vertex verticeS;
+	for(int i=0;i<g->size;i++){
+		Vertex VerticeV = (Vertex)list_getdata(g->table,i);
+		if(VerticeV->data!=start){
+			VerticeV->distancia=2147483647;
+		}
+		else{
+			VerticeV->distancia=0;
+			verticeS=VerticeV
+		}
+		VerticeV->padre=NULL;
+	}
+	PriorityQueue minCola=priorityqueue_create(g->destructor,NULL,g->size);
+	List S = list_create(g->destructor);
+	priorityqueue_offer(minCola,verticeS);
+	while(priorityqueue_size(minCola)>0){
+		Vertex verticeU = (Vertex)priorityqueue_poll(minCola);
+		list_add(S,verticeU);
+		//terminar este metodo, continuar en el insico c del paso 4
+	}
 
 }
 
