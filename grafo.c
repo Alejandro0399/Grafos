@@ -40,6 +40,7 @@ Graph graph_create(PrintFunc printer, DestroyFunc destructor){
 	g->size = 0;
 	g->destructor = destructor;
 	g->printer = printer;
+	printf("Creado\n");
 	return g;
 }
 
@@ -55,6 +56,7 @@ void graph_destroy(Graph g){
 	}
 	list_destroy(g->table);
 	free(g);
+	printf("Destruido\n");
 }
 
 void graph_addVertex(Graph g, Type u){
@@ -65,25 +67,34 @@ void graph_addVertex(Graph g, Type u){
 	v->aristas = NULL;
 	v->data = u;
 	list_add(g->table, v);
+	g->size++;
+	printf("Insertado Vertice\n");
 }
 
 void graph_deleteVertex(Graph g, Type v){
 	if(g == NULL){
 		return;
 	}
+	printf("1\n");
 	for(int i = 0; i<g->size; i++){
 		Vertex vertice = (Vertex)list_getdata(g->table, i);
+		printf("%d\n", *(int*)vertice->data);
 		if(vertice->data == v){
+			printf("2\n");
 			list_destroy(vertice->aristas);
 			list_remove(g->table, i);
 		}
 		for(int j = 0; j<list_size(vertice->aristas); j++){
+			printf("Size: %d\n", list_size(vertice->aristas));
 			Edge e = (Edge)list_getdata(vertice->aristas, j);
-			if(e->origen->data == v || e->destino->data == v){
+			printf("%d %d\n", *(int*)e->origen->data, *(int*)e->destino->data);
+			if(*(int*)e->origen->data == *(int*)v || *(int*)e->destino->data == *(int*)v){
+				printf("3\n");
 				list_remove(vertice->aristas, j);
 			}
 		}
 	}
+	printf("Vertice eliminado\n");
 }
 
 void graph_addEdge(Graph g, Type u, Type v, double weight){
@@ -126,6 +137,7 @@ void graph_addEdge(Graph g, Type u, Type v, double weight){
 	e->destino = verticeV;
 	e->weight = weight;
 	list_add(verticeU->aristas, e);
+	printf("Arista agregada\n");
 }
 
 void graph_deleteEdge(Graph g, Type u, Type v){
@@ -145,6 +157,7 @@ void graph_deleteEdge(Graph g, Type u, Type v){
 			break;
 		}
 	}
+	printf("Arista eliminada\n");
 }
 
 void BFS(Graph g, Type start){
@@ -165,7 +178,7 @@ void BFS(Graph g, Type start){
 	}
 	while(queue_size(g->cola)>0){
 		Vertex verticeU = (Vertex)queue_poll(g->cola);
-		if(verticeU->aristas!=Null){
+		if(verticeU->aristas!=NULL){
 			for(int i=0;i<list_size(verticeU->aristas);i++){
 				Edge e = (Edge)list_getdata(verticeU->aristas,i);
 				Vertex verticeV = e->destino;
@@ -178,6 +191,25 @@ void BFS(Graph g, Type start){
 			}
 		}
 		verticeU->color="Negro";
+	}
+}
+
+void visita(Graph g, Vertex u){
+	g->tiempo++;
+	u->tiempoDescubrimiento=g->tiempo;
+	u->color="Gris";
+	if(u->aristas!=NULL){
+		for(int i=0;i<list_size(u->aristas);i++){
+			Edge e = (Edge)list_getdata(u->aristas,i);
+			Vertex verticeV=e->destino;
+				if(strcmp(u->color,"Blanco")==0){
+					verticeV->padre=u;
+					visita(g,verticeV);
+				}
+		}
+		u->color="Negro";
+		g->tiempo++;
+		u->tiempoTerminacion=g->tiempo;
 	}
 }
 
@@ -194,27 +226,10 @@ void DFS(Graph g){
 			visita(g,verticeU);
 		}
 	}
-	
+
 }
 
-void visita(Graph g, Vertex u){
-	g->tiempo++;
-	u->tiempoDescubrimiento=g->tiempo;
-	u->color="Gris";
-	if(u->aristas!=NULL){
-		for(int i=0;i<list_size(u->aristas);i++){
-			Edge e = (Edge)list_getdata(u->aristas,i);
-			Vertex verticeV=e->destino;
-				if(strcmp(verticeU->color,"Blanco")==0){
-					verticeV->padre=u;
-					visita(g,verticeV);
-				}
-		}
-		u->color="Negro";
-		g->tiempo++;
-		u->tiempoTerminacion=g->tiempo;
-	}
-}
+
 
 void dijkstra(Graph g, Type start){
 	Vertex verticeS;
@@ -225,7 +240,7 @@ void dijkstra(Graph g, Type start){
 		}
 		else{
 			VerticeV->distancia=0;
-			verticeS=VerticeV
+			verticeS=VerticeV;
 		}
 		VerticeV->padre=NULL;
 	}
@@ -233,9 +248,26 @@ void dijkstra(Graph g, Type start){
 	List S = list_create(g->destructor);
 	priorityqueue_offer(minCola,verticeS);
 	while(priorityqueue_size(minCola)>0){
+		bool existe = False;
 		Vertex verticeU = (Vertex)priorityqueue_poll(minCola);
 		list_add(S,verticeU);
-		//terminar este metodo, continuar en el insico c del paso 4
+		for(int i = 0; i<list_size(verticeU->aristas); i++){
+			Edge e = (Edge)list_getdata(verticeU->aristas, i);
+			Vertex verticeV = e->destino;
+			for(int j = 0; j<list_size(S); j++){
+				Vertex verticeS = (Vertex)list_getdata(S, i);
+				if(*(int*)verticeS->data == *(int*)verticeV->data){
+					existe = True;
+					break;
+				}
+			}
+			if(!existe){
+				if(verticeV->distancia > (verticeU->distancia + e->weight)){
+					verticeV->distancia = verticeU->distancia + e->weight;
+					verticeV->padre = verticeU;
+				}
+			}
+		}
 	}
 
 }

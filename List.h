@@ -1,6 +1,8 @@
 #ifndef LIST_H_
 #define LIST_H_
 
+
+
 typedef struct  strList * List;
 typedef void * Type;
 typedef enum {False, True}bool;

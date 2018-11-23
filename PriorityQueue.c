@@ -1,6 +1,7 @@
 #include "PriorityQueue.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include "List.h"
 
 struct strPriorityQueue{
    Type* arr;
@@ -10,14 +11,14 @@ struct strPriorityQueue{
    CompareFunc cF;
 };
 
-void print(PriorityQueue pq){
+void print_pq(PriorityQueue pq){
     for(int i=0;i<pq->size;i++){
         printf("%d ",*(int*)pq->arr[i]);
     }
     printf("\n");
 }
 
-Bool isValidIndex(PriorityQueue pq, int index){
+bool isValidIndex(PriorityQueue pq, int index){
     if(pq==NULL || index>=pq->size) return False;
     return True;
 }
