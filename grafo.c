@@ -78,21 +78,28 @@ void graph_deleteVertex(Graph g, Type v){
 	printf("1\n");
 	for(int i = 0; i<g->size; i++){
 		Vertex vertice = (Vertex)list_getdata(g->table, i);
-		printf("%d\n", *(int*)vertice->data);
-		if(vertice->data == v){
-			printf("2\n");
-			list_destroy(vertice->aristas);
-			list_remove(g->table, i);
-		}
-		for(int j = 0; j<list_size(vertice->aristas); j++){
-			printf("Size: %d\n", list_size(vertice->aristas));
-			Edge e = (Edge)list_getdata(vertice->aristas, j);
-			printf("%d %d\n", *(int*)e->origen->data, *(int*)e->destino->data);
-			if(*(int*)e->origen->data == *(int*)v || *(int*)e->destino->data == *(int*)v){
-				printf("3\n");
-				list_remove(vertice->aristas, j);
+		printf("aaa%d\n", *(int*)vertice->data);
+		if(vertice->aristas!=NULL){
+			for(int j = 0; j<list_size(vertice->aristas); j++){
+				printf("Size: %d\n", list_size(vertice->aristas));
+				Edge e = (Edge)list_getdata(vertice->aristas, j);
+				printf("bbb%d %d\n", *(int*)e->origen->data, *(int*)e->destino->data);
+				if(*(int*)e->origen->data == *(int*)v || *(int*)e->destino->data == *(int*)v){
+					printf("3\n");
+					list_remove(vertice->aristas, j);
+				}
 			}
 		}
+	}
+	for(int i = 0; i<g->size; i++){
+		Vertex vertice = (Vertex)list_getdata(g->table, i);
+		if(vertice->data == v){
+				printf("2\n");
+				list_destroy(vertice->aristas);
+				list_remove(g->table, i);
+				g->size--;
+				break;
+			}
 	}
 	printf("Vertice eliminado\n");
 }
@@ -159,7 +166,7 @@ void graph_deleteEdge(Graph g, Type u, Type v){
 	}
 	printf("Arista eliminada\n");
 }
-
+//todo funciona hasta este punto
 void BFS(Graph g, Type start){
 	for(int i=0;i<g->size;i++){
 		Vertex vertice =(Vertex) list_getdata(g->table,i);
@@ -270,5 +277,20 @@ void dijkstra(Graph g, Type start){
 		}
 	}
 
+}
+
+void imprimirGrafo(Graph g){
+	for(int i=0;i<g->size;i++){
+		Vertex v =(Vertex)list_getdata(g->table,i);
+		printf("%d (%s) ",*(int*)v->data,(char*)v->color);
+		if(v->aristas!=NULL){
+			for(int j=0;j<list_size(v->aristas);j++){
+				Edge e =(Edge)list_getdata(v->aristas,j);
+				printf("%d (%f) (%s) ",*(int*)e->destino->data,e->weight,(char*)e->destino->color);
+			}	
+		}
+		printf("\n");
+	}
+	printf("\n");
 }
 

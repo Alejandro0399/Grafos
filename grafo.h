@@ -13,6 +13,7 @@ void graph_addVertex(Graph g, Type u);
 void graph_deleteVertex(Graph g, Type v);
 void graph_addEdge(Graph g, Type u, Type v, double weight);
 void graph_deleteEdge(Graph g, Type u, Type v);
+void imprimirGrafo(Graph g);
 
 void BFS(Graph g, Type start);
 void DFS(Graph g);
