@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "List.h"
+#include "grafo.h"
 
 struct strPriorityQueue{
    Type* arr;
@@ -27,10 +28,10 @@ int parentIndex(int index){
     return(index-1)/2;
 }
 int leftChildIndex(int index){
-    return 2*index+1;
+    return (2*index)+1;
 }
 int rightChildIndex(int index){
-    return 2*index+2;
+    return (2*index)+2;
 }
 
 
@@ -66,7 +67,7 @@ void priorityqueue_offer(PriorityQueue pq, Type t){
     int pindex=parentIndex(pq->size);
     int index=pq->size;
     pq->size++;
-    
+   
     while(pq->cF(pq->arr[pindex],pq->arr[index])<0){
         Type datatemp = pq->arr[pindex];
         pq->arr[pindex]=pq->arr[index];
@@ -74,6 +75,8 @@ void priorityqueue_offer(PriorityQueue pq, Type t){
         index=pindex;
         pindex=parentIndex(index);
     }
+   
+   
 }
 Type priorityqueue_peek(PriorityQueue pq){
     if(pq == NULL || pq->size==0) return NULL;
@@ -83,26 +86,33 @@ Type priorityqueue_peek(PriorityQueue pq){
 Type priorityqueue_poll(PriorityQueue pq){
     if(pq == NULL || pq->size==0) return NULL;
     Type temp = pq->arr[0];
-    pq->dF(pq->arr[0]);
+   // pq->dF(pq->arr[0]);
     pq->arr[0]=pq->arr[pq->size-1];
     pq->size--;
+    printf("tamaño de esta pendejada%d",pq->size);
     //printf("Primer elemento: %d\n", *(int*)pq->arr[0]);
     int e=0;
     int c=0;
-    if(pq->cF(pq->arr[leftChildIndex(e)], pq->arr[rightChildIndex(e)]) < 0){
+    if(pq->arr[leftChildIndex(e)]!=NULL && pq->arr[rightChildIndex(e)]!=NULL){
+         if(pq->cF(pq->arr[leftChildIndex(e)], pq->arr[rightChildIndex(e)]) < 0){
+        
 		c = rightChildIndex(e);
 	}
 	else{
 		c = leftChildIndex(e);
 	}
     while((pq->cF(pq->arr[e], pq->arr[c]) < 0) && isValidIndex(pq, c)){
+        
 		if(pq->cF(pq->arr[e], pq->arr[c]) < 0){
+          
 			Type datatemp = pq->arr[e];
 			pq->arr[e]=pq->arr[c];		   
 			pq->arr[c]=datatemp;
 			e = c;
 		}
     }
+    }
+   
     return temp;
 }
 

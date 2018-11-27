@@ -5,6 +5,7 @@
 #include "queue.h"
 #include <String.h>
 #include "PriorityQueue.h"
+#include "Stack.h"
 
 struct strGraph{
 	List table;
@@ -12,7 +13,6 @@ struct strGraph{
 	PrintFunc printer;
 	int size;
 	int tiempo;
-	Queue cola;
 };
 
 struct strVertice{
@@ -31,7 +31,7 @@ struct strArista{
 	double weight;
 };
 
-typedef struct strVertice *Vertex;
+
 typedef struct strArista *Edge;
 
 Graph graph_create(PrintFunc printer, DestroyFunc destructor){
@@ -168,6 +168,7 @@ void graph_deleteEdge(Graph g, Type u, Type v){
 }
 //todo funciona hasta este punto
 void BFS(Graph g, Type start){
+	Queue cola;
 	for(int i=0;i<g->size;i++){
 		Vertex vertice =(Vertex) list_getdata(g->table,i);
 		if(vertice->data!=start){
@@ -179,12 +180,12 @@ void BFS(Graph g, Type start){
 			vertice->color="Gris";
 			vertice->distancia=0;
 			vertice->padre=NULL;
-			g->cola=queue_create(g->destructor);
-			queue_offer(g->cola,vertice);
+			cola=queue_create(g->destructor);
+			queue_offer(cola,vertice);
 		}
 	}
-	while(queue_size(g->cola)>0){
-		Vertex verticeU = (Vertex)queue_poll(g->cola);
+	while(queue_size(cola)>0){
+		Vertex verticeU = (Vertex)queue_poll(cola);
 		if(verticeU->aristas!=NULL){
 			for(int i=0;i<list_size(verticeU->aristas);i++){
 				Edge e = (Edge)list_getdata(verticeU->aristas,i);
@@ -193,34 +194,39 @@ void BFS(Graph g, Type start){
 					verticeV->color="Gris";
 					verticeV->distancia=verticeU->distancia+1;
 					verticeV->padre=verticeU;
-					queue_offer(g->cola,verticeV);
+					queue_offer(cola,verticeV);
 				}
 			}
 		}
+		g->printer(verticeU->data);
 		verticeU->color="Negro";
 	}
+	queue_destroy(cola);
 }
 
 void visita(Graph g, Vertex u){
 	g->tiempo++;
 	u->tiempoDescubrimiento=g->tiempo;
+	g->printer(u->data);
+	
 	u->color="Gris";
 	if(u->aristas!=NULL){
 		for(int i=0;i<list_size(u->aristas);i++){
 			Edge e = (Edge)list_getdata(u->aristas,i);
 			Vertex verticeV=e->destino;
-				if(strcmp(u->color,"Blanco")==0){
+				if(strcmp(verticeV->color,"Blanco")==0){
 					verticeV->padre=u;
 					visita(g,verticeV);
 				}
 		}
-		u->color="Negro";
-		g->tiempo++;
-		u->tiempoTerminacion=g->tiempo;
 	}
+	u->color="Negro";
+	g->tiempo++;
+	u->tiempoTerminacion=g->tiempo;
 }
 
 void DFS(Graph g){
+	if(g==NULL) return;
 	for(int i=0;i<g->size;i++){
 		Vertex verticeU = (Vertex)list_getdata(g->table,i);
 		verticeU->color="Blanco";
@@ -230,15 +236,23 @@ void DFS(Graph g){
 	for(int i=0;i<g->size;i++){
 		Vertex verticeU = (Vertex)list_getdata(g->table,i);
 		if(strcmp(verticeU->color,"Blanco")==0){
+			
 			visita(g,verticeU);
 		}
 	}
-
 }
 
-
+int CompareFunction(Type t1, Type t2){
+	Vertex v1 = (Vertex)t1;
+	Vertex v2 = (Vertex)t2;
+	int i1 = *(int*)v1->data;
+	int i2 = *(int*)v2->data;
+	return (*((int*)v1->data)) - (*((int*)v2->data));
+}
 
 void dijkstra(Graph g, Type start){
+	int(*Compare)(Type, Type)=CompareFunction;
+	if(g==NULL)return;
 	Vertex verticeS;
 	for(int i=0;i<g->size;i++){
 		Vertex VerticeV = (Vertex)list_getdata(g->table,i);
@@ -251,9 +265,11 @@ void dijkstra(Graph g, Type start){
 		}
 		VerticeV->padre=NULL;
 	}
-	PriorityQueue minCola=priorityqueue_create(g->destructor,NULL,g->size);
+	Stack padres=stack_create(g->destructor);
+	PriorityQueue minCola=priorityqueue_create(g->destructor,Compare,g->size);
 	List S = list_create(g->destructor);
 	priorityqueue_offer(minCola,verticeS);
+	//printf("sizeS : %d\n",list_size(((Vertex)priorityqueue_poll(minCola))->aristas));
 	while(priorityqueue_size(minCola)>0){
 		bool existe = False;
 		Vertex verticeU = (Vertex)priorityqueue_poll(minCola);
@@ -272,21 +288,34 @@ void dijkstra(Graph g, Type start){
 				if(verticeV->distancia > (verticeU->distancia + e->weight)){
 					verticeV->distancia = verticeU->distancia + e->weight;
 					verticeV->padre = verticeU;
+					
 				}
 			}
+			stack_push(padres,verticeV);
 		}
+		
 	}
-
+	printf("tamaño padres : %d\n",stack_size(padres));
+	for(int i=0;i<stack_size(padres);i++){
+		printf("ii\n");
+		Vertex v =(Vertex)stack_pop(padres);
+		printf("node: ");
+		g->printer(v->data);
+	}
 }
 
 void imprimirGrafo(Graph g){
+	if(g==NULL)return;
 	for(int i=0;i<g->size;i++){
 		Vertex v =(Vertex)list_getdata(g->table,i);
-		printf("%d (%s) ",*(int*)v->data,(char*)v->color);
+		if(v->padre!=NULL)
+			printf("dato: %d distancia: %d color: %s  tiempoDescubierto: %d TiempoTerminado: %d padre: %d \n\t",*(int*)v->data,v->distancia,(char*)v->color,v->tiempoDescubrimiento,v->tiempoTerminacion,*(int*)v->padre->data);
+		else
+			printf("dato: %d distancia: %d color: %s tiempoDescubierto: %d TiempoTerminado: %d\n\t",*(int*)v->data,v->distancia,(char*)v->color,v->tiempoDescubrimiento,v->tiempoTerminacion);
 		if(v->aristas!=NULL){
 			for(int j=0;j<list_size(v->aristas);j++){
 				Edge e =(Edge)list_getdata(v->aristas,j);
-				printf("%d (%f) (%s) ",*(int*)e->destino->data,e->weight,(char*)e->destino->color);
+					printf("-> arista a %d weight: %f color: %s  ",*(int*)e->destino->data,e->weight,(char*)e->destino->color);
 			}	
 		}
 		printf("\n");
@@ -294,3 +323,6 @@ void imprimirGrafo(Graph g){
 	printf("\n");
 }
 
+List getAristas(Vertex g){
+	return g->aristas;
+}
