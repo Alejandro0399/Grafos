@@ -35,12 +35,12 @@ int main(void) {
 	graph_addVertex(g, &n3);
 	graph_addVertex(g,&n4);
 	imprimirGrafo(g);
-	graph_addEdge(g, &n1, &n2, 10);
+	graph_addEdge(g, &n1, &n2, .1);
 	imprimirGrafo(g);
-	graph_addEdge(g, &n1, &n3, 20);
+	graph_addEdge(g, &n1, &n3, 2);
 	imprimirGrafo(g);
-	graph_addEdge(g, &n3, &n4, 15);
-	//graph_addEdge(g, &n4, &n1, 15);
+	graph_addEdge(g, &n3, &n4, .15);
+	graph_addEdge(g, &n2, &n4, .15);
 	imprimirGrafo(g);
 	
 //	imprimirGrafo(g);
@@ -48,7 +48,7 @@ int main(void) {
 //	BFS(g,&n1);
 //	imprimirGrafo(g);
 //	DFS(g);
-	dijkstra(g,&n2);
+	dijkstra(g,&n1);
 //	imprimirGrafo(g);
 	/*graph_deleteVertex(g, &n1);
 	imprimirGrafo(g);

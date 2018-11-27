@@ -274,25 +274,43 @@ void dijkstra(Graph g, Type start){
 		bool existe = False;
 		Vertex verticeU = (Vertex)priorityqueue_poll(minCola);
 		list_add(S,verticeU);
+		printf("\nsi sale\n");
+		printf("tamañoooo: %d\n",*(int*)verticeU->data);
+		printf("AA: %d\n", list_size(verticeU->aristas));
 		for(int i = 0; i<list_size(verticeU->aristas); i++){
+			printf("Iteración %d\n", i);
 			Edge e = (Edge)list_getdata(verticeU->aristas, i);
 			Vertex verticeV = e->destino;
+			printf("Continuación iteración %d\n", i);
 			for(int j = 0; j<list_size(S); j++){
-				Vertex verticeS = (Vertex)list_getdata(S, i);
-				if(*(int*)verticeS->data == *(int*)verticeV->data){
+				printf("Continuación iteración %d\n", i);
+				printf("Continuación iteración j %d\n", j);
+				Vertex verticeS = (Vertex)list_getdata(S, j);
+				printf("Continuación iteración j %d\n", j);
+				if(CompareFunction((Type)verticeS->data,(Type)verticeV->data)==0){
+					printf("Entra\n");
 					existe = True;
 					break;
 				}
 			}
 			if(!existe){
+				printf("No existe\n");
 				if(verticeV->distancia > (verticeU->distancia + e->weight)){
+					printf("Si entro\n");
 					verticeV->distancia = verticeU->distancia + e->weight;
 					verticeV->padre = verticeU;
+					printf("Si asigno\n");
 					
 				}
 			}
+			printf("Insertando a stack\n");
+			stack_push(padres,verticeU);
 			stack_push(padres,verticeV);
+			
+			printf("Insertado existoso\n");
 		}
+		//stack_push(padres,verticeV);
+		//stack_push(padres,verticeU);
 		
 	}
 	printf("tamaño padres : %d\n",stack_size(padres));
@@ -324,5 +342,13 @@ void imprimirGrafo(Graph g){
 }
 
 List getAristas(Vertex g){
+	if(g == NULL){
+		printf("Vale verga\n");
+		return NULL;
+	}
 	return g->aristas;
+}
+
+int getdata(Vertex v){
+	return *(int*)v->data;
 }
