@@ -40,7 +40,6 @@ Graph graph_create(PrintFunc printer, DestroyFunc destructor){
 	g->size = 0;
 	g->destructor = destructor;
 	g->printer = printer;
-	printf("Creado\n");
 	return g;
 }
 
@@ -68,24 +67,19 @@ void graph_addVertex(Graph g, Type u){
 	v->data = u;
 	list_add(g->table, v);
 	g->size++;
-	printf("Insertado Vertice\n");
+	
 }
 
 void graph_deleteVertex(Graph g, Type v){
 	if(g == NULL){
 		return;
 	}
-	printf("1\n");
 	for(int i = 0; i<g->size; i++){
-		Vertex vertice = (Vertex)list_getdata(g->table, i);
-		printf("aaa%d\n", *(int*)vertice->data);
+		Vertex vertice = (Vertex)list_getdata(g->table, i);	
 		if(vertice->aristas!=NULL){
 			for(int j = 0; j<list_size(vertice->aristas); j++){
-				printf("Size: %d\n", list_size(vertice->aristas));
 				Edge e = (Edge)list_getdata(vertice->aristas, j);
-				printf("bbb%d %d\n", *(int*)e->origen->data, *(int*)e->destino->data);
 				if(*(int*)e->origen->data == *(int*)v || *(int*)e->destino->data == *(int*)v){
-					printf("3\n");
 					list_remove(vertice->aristas, j);
 				}
 			}
@@ -101,7 +95,7 @@ void graph_deleteVertex(Graph g, Type v){
 				break;
 			}
 	}
-	printf("Vertice eliminado\n");
+
 }
 
 void graph_addEdge(Graph g, Type u, Type v, double weight){
@@ -144,7 +138,7 @@ void graph_addEdge(Graph g, Type u, Type v, double weight){
 	e->destino = verticeV;
 	e->weight = weight;
 	list_add(verticeU->aristas, e);
-	printf("Arista agregada\n");
+	
 }
 
 void graph_deleteEdge(Graph g, Type u, Type v){
@@ -164,7 +158,7 @@ void graph_deleteEdge(Graph g, Type u, Type v){
 			break;
 		}
 	}
-	printf("Arista eliminada\n");
+
 }
 //todo funciona hasta este punto
 void BFS(Graph g, Type start){
@@ -245,14 +239,15 @@ void DFS(Graph g){
 int CompareFunction(Type t1, Type t2){
 	Vertex v1 = (Vertex)t1;
 	Vertex v2 = (Vertex)t2;
-	int i1 = *(int*)v1->data;
-	int i2 = *(int*)v2->data;
-	return (*((int*)v1->data)) - (*((int*)v2->data));
+	return (v1->distancia) - (v2->distancia);
 }
 
 void dijkstra(Graph g, Type start){
 	int(*Compare)(Type, Type)=CompareFunction;
 	if(g==NULL)return;
+	Stack padres=stack_create(g->destructor);
+	PriorityQueue minCola=priorityqueue_create(g->destructor,Compare,g->size);
+	List S = list_create(g->destructor);
 	Vertex verticeS;
 	for(int i=0;i<g->size;i++){
 		Vertex VerticeV = (Vertex)list_getdata(g->table,i);
@@ -264,67 +259,111 @@ void dijkstra(Graph g, Type start){
 			verticeS=VerticeV;
 		}
 		VerticeV->padre=NULL;
+		//imprimirGrafo(g);
 	}
-	Stack padres=stack_create(g->destructor);
-	PriorityQueue minCola=priorityqueue_create(g->destructor,Compare,g->size);
-	List S = list_create(g->destructor);
+	
+	/*for(int i=0;i<g->size;i++){
+		Vertex verticeX = (Vertex)list_getdata(g->table,i);
+		priorityqueue_offer(minCola,verticeX);
+	}*/
 	priorityqueue_offer(minCola,verticeS);
 	//printf("sizeS : %d\n",list_size(((Vertex)priorityqueue_poll(minCola))->aristas));
+	stack_push(padres,verticeS);
 	while(priorityqueue_size(minCola)>0){
+		
 		bool existe = False;
 		Vertex verticeU = (Vertex)priorityqueue_poll(minCola);
 		list_add(S,verticeU);
-		printf("\nsi sale\n");
-		printf("tamañoooo: %d\n",*(int*)verticeU->data);
-		printf("AA: %d\n", list_size(verticeU->aristas));
+		Vertex verticehijo;
 		for(int i = 0; i<list_size(verticeU->aristas); i++){
-			printf("Iteración %d\n", i);
+			//imprimirGrafo(g);
+			existe = False;
 			Edge e = (Edge)list_getdata(verticeU->aristas, i);
 			Vertex verticeV = e->destino;
-			printf("Continuación iteración %d\n", i);
+			if(i==0)verticehijo=verticeV;
 			for(int j = 0; j<list_size(S); j++){
-				printf("Continuación iteración %d\n", i);
-				printf("Continuación iteración j %d\n", j);
 				Vertex verticeS = (Vertex)list_getdata(S, j);
-				printf("Continuación iteración j %d\n", j);
 				if(CompareFunction((Type)verticeS->data,(Type)verticeV->data)==0){
-					printf("Entra\n");
 					existe = True;
 					break;
 				}
 			}
 			if(!existe){
-				printf("No existe\n");
 				if(verticeV->distancia > (verticeU->distancia + e->weight)){
-					printf("Si entro\n");
 					verticeV->distancia = verticeU->distancia + e->weight;
 					verticeV->padre = verticeU;
-					printf("Si asigno\n");
 					
+					priorityqueue_offer(minCola,verticeV);					
 				}
 			}
-			printf("Insertando a stack\n");
-			stack_push(padres,verticeU);
-			stack_push(padres,verticeV);
-			
-			printf("Insertado existoso\n");
+			if(verticehijo->distancia < verticeV->distancia)verticehijo=verticeV;
 		}
-		//stack_push(padres,verticeV);
-		//stack_push(padres,verticeU);
+		Vertex vater =(Vertex) stack_top(padres);
+		if(verticehijo->padre==vater)
+			stack_push(padres,verticehijo);
 		
 	}
-	printf("tamaño padres : %d\n",stack_size(padres));
-	for(int i=0;i<stack_size(padres);i++){
-		printf("ii\n");
+/*	for(int i = 0; i<list_size(verticeU->aristas); i++)
+	while(Vertice!=NULL){
+		printf("nodo: ");
+		g->printer(Vertice->data);
+		Vertice=Vertice->padre;
+	}*/
+	while(stack_size(padres)>0){
 		Vertex v =(Vertex)stack_pop(padres);
 		printf("node: ");
 		g->printer(v->data);
 	}
 }
 
-void imprimirGrafo(Graph g){
+void imprimirGrafo(Graph g, int fun){
 	if(g==NULL)return;
-	for(int i=0;i<g->size;i++){
+	if(fun == 0){ // BFS
+		for(int i = 0; i<g->size; i++){
+			Vertex v = (Vertex)list_getdata(g->table, i);
+				printf("Dato: %d Distancia: %d Color : %s\n\t", *(int*)v->data, v->distancia, (char*)v->color);
+			if(v->aristas!=NULL){
+				for(int j = 0; j<list_size(v->aristas);j++){
+					Edge e = (Edge)list_getdata(v->aristas, j);
+					printf("-> arista a %d weight: %f color: %s\n\t", *(int*)e->destino->data, e->weight, (char*)e->destino->color);
+				}
+			}
+			printf("\n");
+		}
+		printf("\n");
+	}
+	else if(fun == 1){ // DFS
+		for(int i = 0; i<g->size; i++){
+			Vertex v = (Vertex)list_getdata(g->table, i);
+				printf("Dato: %d Color : %s TiempoDescubierto: %d TiempoTerminado: %d\n\t", *(int*)v->data,(char*)v->color,v->tiempoDescubrimiento,v->tiempoTerminacion);
+			if(v->aristas!=NULL){
+				for(int j = 0; j<list_size(v->aristas);j++){
+					Edge e = (Edge)list_getdata(v->aristas, j);
+					printf("-> arista a %d weight: %f color: %s\n\t", *(int*)e->destino->data, e->weight, (char*)e->destino->color);
+				}
+			}
+			printf("\n");
+		}
+		printf("\n");
+	}
+	else if(fun == 2){ // Dijskra
+		for(int i=0;i<g->size;i++){
+		Vertex v =(Vertex)list_getdata(g->table,i);
+		if(v->padre!=NULL)
+			printf("dato: %d distancia: %d  padre: %d \n\t",*(int*)v->data,v->distancia,*(int*)v->padre->data);
+		else
+			printf("dato: %d distancia: %d \n\t",*(int*)v->data,v->distancia);
+		if(v->aristas!=NULL){
+			for(int j=0;j<list_size(v->aristas);j++){
+				Edge e =(Edge)list_getdata(v->aristas,j);
+					printf("-> arista a %d weight: %f ",*(int*)e->destino->data,e->weight);
+			}	
+		}
+		printf("\n");
+	}
+	printf("\n");
+	}
+	/*for(int i=0;i<g->size;i++){
 		Vertex v =(Vertex)list_getdata(g->table,i);
 		if(v->padre!=NULL)
 			printf("dato: %d distancia: %d color: %s  tiempoDescubierto: %d TiempoTerminado: %d padre: %d \n\t",*(int*)v->data,v->distancia,(char*)v->color,v->tiempoDescubrimiento,v->tiempoTerminacion,*(int*)v->padre->data);
@@ -338,7 +377,7 @@ void imprimirGrafo(Graph g){
 		}
 		printf("\n");
 	}
-	printf("\n");
+	printf("\n");*/
 }
 
 List getAristas(Vertex g){

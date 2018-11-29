@@ -88,24 +88,25 @@ Type priorityqueue_poll(PriorityQueue pq){
     Type temp = pq->arr[0];
    // pq->dF(pq->arr[0]);
     Vertex v = (Vertex) temp;
-    printf("Ethan se la come\n");
+   
     List l = getAristas(v);
-    printf("pincchi dieguito%d\n", list_size(l));
+   
     pq->arr[0]=pq->arr[pq->size-1];
     pq->size--;
-    printf("tamaño de esta pendejada %d\n",pq->size);
     //printf("Primer elemento: %d\n", *(int*)pq->arr[0]);
     int e=0;
     int c=0;
-    if(pq->arr[leftChildIndex(e)]!=NULL && pq->arr[rightChildIndex(e)]!=NULL){
-         if(pq->cF(pq->arr[leftChildIndex(e)], pq->arr[rightChildIndex(e)]) < 0){
-        
-		c = rightChildIndex(e);
+    //if(pq->arr[leftChildIndex(e)]!=NULL && pq->arr[rightChildIndex(e)]!=NULL){
+    if(leftChildIndex(e)<pq->size && rightChildIndex(e)<pq->size){
+        Type left=pq->arr[leftChildIndex(e)];
+        Type right=pq->arr[rightChildIndex(e)];
+        if(pq->cF(left,right) < 0){
+		    c = rightChildIndex(e);
         }
         else{
             c = leftChildIndex(e);
         }
-        printf("mimimimi");
+       
         while((pq->cF(pq->arr[e], pq->arr[c]) < 0) && isValidIndex(pq, c)){
             
             if(pq->cF(pq->arr[e], pq->arr[c]) < 0){
@@ -117,7 +118,6 @@ Type priorityqueue_poll(PriorityQueue pq){
             }
         }
     }
-    
     return temp;
 }
 

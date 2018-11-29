@@ -44,7 +44,7 @@ void list_destroy(List l){
 
 int  list_size(List l){
 	if(l == NULL){
-		printf("\nHola\n");
+		
 		return -1;
 	}
 	return l->size;
