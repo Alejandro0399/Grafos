@@ -356,7 +356,7 @@ void imprimirGrafo(Graph g, int fun){
 		if(v->aristas!=NULL){
 			for(int j=0;j<list_size(v->aristas);j++){
 				Edge e =(Edge)list_getdata(v->aristas,j);
-					printf("-> arista a %d weight: %f ",*(int*)e->destino->data,e->weight);
+					printf("-> arista a %d weight: %f\n\t ",*(int*)e->destino->data,e->weight);
 			}	
 		}
 		printf("\n");
